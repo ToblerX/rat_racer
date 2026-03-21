@@ -17,7 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { listSavedCVs, deleteSavedCV, type SavedCV } from "@/lib/api";
-import { FileText, Trash2, Eye } from "lucide-react";
+import { FileText, Trash2, Eye, Download } from "lucide-react";
 
 export default function SavedCVsPage() {
   const [cvs, setCvs] = useState<SavedCV[]>([]);
@@ -85,6 +85,14 @@ export default function SavedCVsPage() {
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
+                    <a
+                      href={`http://localhost:8000/api/cv/saved/${cv.id}/download`}
+                      download
+                    >
+                      <Button variant="ghost" size="icon">
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </a>
                     <Button
                       variant="ghost"
                       size="icon"

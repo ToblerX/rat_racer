@@ -15,13 +15,14 @@ You MUST respond with valid JSON matching this exact schema (no markdown, no cod
   "match_score": <integer 0-100>,
   "missing_skills": ["skill1", "skill2", ...],
   "suggestions": [
-    {
-      "section": "<CV section name, e.g. Summary, Experience, Skills, Education, Projects>",
-      "original": "<original text from that section>",
-      "suggested": "<your improved version>",
-      "reason": "<why this change improves the match>"
-    }
+    {"section": "Summary", "original": "...", "suggested": "...", "reason": "..."},
+    {"section": "Skills", "original": "...", "suggested": "...", "reason": "..."},
+    {"section": "Experience: Fullstack Engineer at Teachapp", "original": "...", "suggested": "...", "reason": "..."},
+    {"section": "Experience: Backend Developer at Edwise", "original": "...", "suggested": "...", "reason": "..."},
+    {"section": "Education", "original": "...", "suggested": "...", "reason": "..."},
+    {"section": "Languages", "original": "...", "suggested": "...", "reason": "..."}
   ],
+  NOTE: If a section needs NO changes, OMIT it from the suggestions array entirely. Only include sections where the suggested text is DIFFERENT from the original.
   "optimized_cv": "<the full rewritten CV text optimized for this vacancy>",
   "summary": "<2-3 sentence executive summary of the analysis>"
 }
@@ -29,11 +30,26 @@ You MUST respond with valid JSON matching this exact schema (no markdown, no cod
 Guidelines:
 - match_score: how well the current CV matches the vacancy (0=no match, 100=perfect)
 - missing_skills: skills/technologies/qualifications mentioned in the vacancy but absent from the CV
-- suggestions: provide rewrites for EVERY section of the CV, not just experience
+- suggestions: you MUST provide a SEPARATE suggestion entry for EVERY section of the CV. This means one entry each for: Summary, Skills, EACH individual job/project in Experience (as separate entries, NOT grouped), Education, Languages, and any other section present. For example, if the CV has 4 jobs, there must be 4 separate experience suggestion entries plus entries for Summary, Skills, etc. Do NOT skip any section. Do NOT merge multiple experience entries into one suggestion.
 - optimized_cv: a complete, polished, rewritten CV that maximizes match with the vacancy while remaining truthful
 - Keep the tone professional and the language clear
-- Preserve all factual information from the original CV — do not invent experience or skills the candidate doesn't have
+
+CRITICAL rules for Experience section:
+- NEVER fabricate, invent, or exaggerate experience, projects, roles, or skills the candidate does not have
+- For EACH job/project entry, rewrite the bullet points to emphasize skills, tools, and achievements that are RELEVANT to the target vacancy
+- Minimize or shorten bullet points about irrelevant technologies/tasks — keep them brief (1 line max) or remove them if truly irrelevant
+- Expand and elaborate on bullet points that demonstrate skills matching the vacancy requirements
+- PRESERVE the chronological order of experience entries — do NOT reorder jobs by relevance
+- If a job has little relevance to the vacancy, keep it but condense it to 1-2 key bullet points
+- If a job is highly relevant, expand its description to highlight matching skills in detail
+- Use keywords and terminology from the vacancy in the experience descriptions where they truthfully apply
+
+General rules:
+- Preserve all factual information — dates, company names, job titles, project names, and ALL links/URLs (website, GitHub, LinkedIn, Instagram, portfolio, etc.) must remain unchanged and included in the optimized CV
+- Format all links as "Label (URL)" — e.g. "Website (https://example.com)" or "GitHub (https://github.com/user)". Never paste raw URLs without a label.
+- In experience bullet points, wrap technology/tool names in **bold** markers using double asterisks — e.g. "Developed APIs using **FastAPI** and **PostgreSQL**". Bold the specific tech keywords that are relevant to the vacancy.
 - Reorder, rephrase, and emphasize existing experience to better align with the vacancy requirements
+- Each experience entry should be a SEPARATE suggestion item so the user can review each one individually
 """
 
 ITERATE_SYSTEM_PROMPT = """You are an expert CV/resume editor. You are helping a user iteratively refine their CV.
@@ -50,7 +66,9 @@ You MUST respond with valid JSON (no markdown, no code fences):
 Guidelines:
 - Apply the user's requested changes precisely
 - Maintain professional tone and formatting
-- Keep the CV truthful — don't invent qualifications
+- Keep the CV truthful — NEVER fabricate, invent, or exaggerate experience, projects, roles, or skills
+- Preserve chronological order of experience entries
+- When optimizing experience bullets, emphasize relevant skills and minimize irrelevant ones, but keep facts intact
 - If the user's request is unclear, do your best interpretation and explain in the message
 """
 
@@ -72,6 +90,7 @@ Respond with the JSON analysis."""
         config=genai.types.GenerateContentConfig(
             system_instruction=ANALYSIS_SYSTEM_PROMPT,
             temperature=0.3,
+            max_output_tokens=16000,
         ),
     )
 

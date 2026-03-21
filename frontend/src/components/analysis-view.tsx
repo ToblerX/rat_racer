@@ -219,52 +219,52 @@ export function AnalysisView({ analysis: initialAnalysis, onReset }: Props) {
         </Card>
       </div>
 
-      {/* Suggestions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lightbulb className="h-5 w-5" />
-            Section-by-Section Suggestions
-          </CardTitle>
-          <CardDescription>
-            AI-suggested rewrites for each section of your CV
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea className="max-h-[400px]">
-            <div className="space-y-4">
-              {(analysis.suggestions ?? []).map((s, i) => (
-                <div key={i} className="border rounded-lg p-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="outline">{s.section}</Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {s.reason}
-                    </span>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-1">
-                        Original
-                      </p>
-                      <div className="bg-muted rounded p-2 whitespace-pre-wrap font-mono text-xs">
-                        {s.original}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-green-600 mb-1">
-                        Suggested
-                      </p>
-                      <div className="bg-green-50 dark:bg-green-950/30 rounded p-2 whitespace-pre-wrap font-mono text-xs">
-                        {s.suggested}
-                      </div>
-                    </div>
+      {/* Suggestions header */}
+      <div className="flex items-center gap-2">
+        <Lightbulb className="h-5 w-5" />
+        <h2 className="text-lg font-semibold">Section-by-Section Suggestions</h2>
+        <span className="text-sm text-muted-foreground">
+          AI-suggested rewrites for each section of your CV
+        </span>
+      </div>
+
+      {/* Individual suggestion cards */}
+      {(analysis.suggestions ?? [])
+        .filter((s) => s.original?.trim() !== s.suggested?.trim())
+        .map((s, i) => (
+          <Card key={i}>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between gap-4">
+                <CardTitle className="text-sm">
+                  <Badge variant="outline">{s.section}</Badge>
+                </CardTitle>
+                <CardDescription className="text-xs text-right">
+                  {s.reason}
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-2">
+                    Original
+                  </p>
+                  <div className="bg-muted rounded p-3 whitespace-pre-wrap font-mono text-xs leading-relaxed">
+                    {s.original}
                   </div>
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </CardContent>
-      </Card>
+                <div>
+                  <p className="text-xs font-medium text-green-600 mb-2">
+                    Suggested
+                  </p>
+                  <div className="bg-green-50 dark:bg-green-950/30 rounded p-3 whitespace-pre-wrap font-mono text-xs leading-relaxed">
+                    {s.suggested}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
 
       {/* Optimized CV + Chat */}
       <div className="grid md:grid-cols-2 gap-6">

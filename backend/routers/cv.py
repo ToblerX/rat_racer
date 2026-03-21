@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -6,6 +7,7 @@ from database import get_db
 from models import SavedCV
 from schemas import SavedCVOut, SaveCVRequest
 from services.parser import parse_cv
+from services.cv_generator import generate_docx
 
 router = APIRouter(prefix="/api/cv", tags=["cv"])
 
@@ -53,6 +55,20 @@ async def get_saved_cv(cv_id: int, db: AsyncSession = Depends(get_db)):
     if not cv:
         raise HTTPException(404, "CV not found")
     return cv
+
+
+@router.get("/saved/{cv_id}/download")
+async def download_saved_cv(cv_id: int, db: AsyncSession = Depends(get_db)):
+    """Download a saved CV as DOCX."""
+    cv = await db.get(SavedCV, cv_id)
+    if not cv:
+        raise HTTPException(404, "CV not found")
+    docx_bytes = generate_docx(cv.original_text)
+    return Response(
+        content=docx_bytes,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename="{cv.name}.docx"'},
+    )
 
 
 @router.delete("/saved/{cv_id}")
